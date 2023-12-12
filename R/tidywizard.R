@@ -173,10 +173,10 @@ tidywizard <- function(){
                       collapsible = F,
                       height = "300",
                       width = NULL,
-                      title = shiny::tagList(
+                      title =
                         shiny::splitLayout(id = "div_header_code_box",
                                     htmltools::div(shiny::icon("code"), "R Code", id = "div_icon_title_code_box"),
-                                    shiny::uiOutput("BTN_CLIPBOARD"))
+                                    shiny::uiOutput("BTN_CLIPBOARD")
                       ),
 
                       rintrojs::introBox(data.step = 5, data.intro = intro$text[5],
@@ -208,12 +208,12 @@ tidywizard <- function(){
                    ')
         )),
         easyClose = TRUE,
-        footer = shiny::tagList(
+        footer =
           shiny::splitLayout(
             shiny::actionButton(inputId = "BTN_SKIP_INTRO", label = "SKIP INTRODUCTION", icon = shiny::icon("forward")),
             shiny::actionButton(inputId = "INTRO", label = "START INTRODUCTION", icon = shiny::icon("info-circle"))
           )
-        )
+
       ))
     })
 
@@ -370,7 +370,7 @@ tidywizard <- function(){
                     multiple = TRUE)
         # )
       } else if (selected_function() == "arrange"){
-        tagList(
+        shiny::tagList(
           shiny::selectInput(inputId = "SELEC_COLS_ARRANGE",
                       label = "Choose the column(s) to order by",
                       choices = colnames(reactive_values$data),
@@ -380,7 +380,7 @@ tidywizard <- function(){
                         value = F)
         )
       } else if (selected_function() == "rename"){
-        tagList(
+        shiny::tagList(
           shiny::selectInput(inputId = "SELEC_COL_RENAME_1",
                       label = "Choose the column to rename",
                       choices = colnames(reactive_values$data)),
@@ -730,5 +730,6 @@ tidywizard <- function(){
     # })
   }
 
-  shinyApp(ui, server)
+  shinyApp(ui, server) |>
+    suppressWarnings()
 }
