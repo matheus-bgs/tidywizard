@@ -7,35 +7,49 @@
 #' @import tidyr
 #' @import rclipboard
 #' @import tippy
+#' @import fresh
 #'
 #' @export
 #'
 #' @returns Defines the tidywizard shiny application
 
 tidywizard <- function(){
-  intro <- readr::read_csv2(here::here("inst/intro.csv"),
-                            locale = readr::locale(encoding = "latin1"))
+  intro <- tidywizard:::intro_text
 
   df <- ggplot2::mpg
 
-  choices_fct <- c("select - Selecione colunas",
-                   "filter - Filtre linhas",
-                   "arrange - Ordene as colunas",
-                   "count - Conte os valores",
-                   "rename - Renomeie colunas",
-                   "mutate - Crie/altere colunas",
-                   "summarise - Resuma seus dados",
-                   "separate - Separe uma coluna",
-                   "unite - Junte colunas")
+  choices_fct <- c(
+    # "select - Selecione colunas",
+    "select - Select columns",
+    # "filter - Filtre linhas",
+    "filter - Filter rows",
+    # "arrange - Ordene as colunas",
+    "arrange - Order columns",
+    # "count - Conte os valores",
+    "count - Count the values",
+    # "rename - Renomeie colunas",
+    "rename - Rename columns",
+    # "mutate - Crie/altere colunas",
+    "mutate - Create/change columns",
+    # "summarise - Resuma seus dados",
+    "summarise - Summarise data",
+    # "separate - Separe uma coluna",
+    "separate - Separate a column",
+    # "unite - Junte colunas",
+    "unite - Unite columns"
+  )
 
   numeric_summs <- c("mean", "median", "standard deviation",
                      "variance", "minimum", "maximum")
 
-  mutate_choices <- c("Operações numéricas",
-                      "Operações com funções"
-                      # "Conversão de classes",
-                      # "Somatórios",
-                      # "'Se, senão' (If, else)"
+  mutate_choices <- c(
+    # "Operações numéricas",
+    "Numerical operations",
+    # "Operações com funções",
+    "Operations with functions"
+    # "Conversão de classes",
+    # "Somatórios",
+    # "'Se, senão' (If, else)"
   )
 
   ui <- dashboardPage(
@@ -43,111 +57,102 @@ tidywizard <- function(){
     help = NULL,
     dark = NULL,
     ## Header
-    bs4Dash::bs4DashNavbar(title = bs4DashBrand(HTML("<strong>tidywizard</strong>"), opacity = 1, color = "primary",
-                                                image = knitr::image_uri(here::here("inst/logo_tidywizard.png"))),
-                           actionButton(inputId = "BTN_RESET", label = "Botão de Reset", icon = icon("backward-fast")),
-                           actionButton(inputId = "BTN_BACK", label = "Voltar uma transformação", icon = icon("rotate-left"))
+    bs4Dash::bs4DashNavbar(
+      tags$style("
+      .fa-solid, .fas {
+      color:#fff;
+      }"),
+      title = bs4Dash::bs4DashBrand(htmltools::HTML("<strong>tidywizard</strong>"), opacity = 1, color = "primary",
+                                    image = knitr::image_uri(fs::path_package("logo_tidywizard.png", package = "tidywizard"))),
+      shiny::actionButton(inputId = "BTN_RESET",
+                            label = "Reset Button",
+                            icon = shiny::icon("backward-fast")),
+      shiny::actionButton(inputId = "BTN_BACK",
+                            label = "Backup a Transformation",
+                            icon = shiny::icon("rotate-left"))
     ),
     ## Sidebar
-    dashboardSidebar(width = "200",
-                     collapsed = T, id = "sidebar_id",
-                     sidebarMenu(id = "TABS",
-                                 # menuItem(tabName = "TAB_HOME",
-                                 #   "Home", icon = icon("house")
-                                 # ),
-                                 menuItem(tabName = "TAB_DATA",
-                                          "Data Manipulation", icon = icon("filter")
-                                 )#,
-                                 # menuItem(tabName = "TAB_SHEET",
-                                 #   "Cheat Sheet", icon = icon("note-sticky")
-                                 # )
-                     )
+    bs4Dash::dashboardSidebar(
+      htmltools::includeCSS(fs::path_package("obs.css", package = "tidywizard")),
+      width = "200",
+      collapsed = T, id = "sidebar_id",
+      bs4Dash::sidebarMenu(id = "TABS",
+                  # menuItem(tabName = "TAB_HOME",
+                  #   "Home", icon = shiny::icon("house")
+                  # ),
+                  bs4Dash::menuItem(tabName = "TAB_DATA",
+                                    "Data Manipulation", icon = shiny::icon("filter")
+                  )#,
+                  # menuItem(tabName = "TAB_SHEET",
+                  #   "Cheat Sheet", icon = shiny::icon("note-sticky")
+                  # )
+      )
     ),
 
     ## Body
     bs4Dash::bs4DashBody(
+      htmltools::includeCSS(fs::path_package("obs.css", package = "tidywizard")),
       ## INTRO TOUR ----
       rintrojs::introjsUI(),
-      tags$head(
-        tags$style(
-          HTML("
-      .tour_button {
-        font-weight: bold;
-        color:white;
-      }"))
-      ),
+
+      fresh::use_theme(fresh::create_theme(
+        fresh::bs4dash_color(
+          blue = "#09529a"
+        )
+      )),
 
       ## ITEMS ----
-      tabItems(
-        tabItem(tabName = "TAB_DATA",
-                fluidRow(
-                  column(
-                    width = 7,
-                    fluidRow(
+      bs4Dash::tabItems(
+        bs4Dash::tabItem(tabName = "TAB_DATA",
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 6,
+                    shiny::fluidRow(
                       rintrojs::introBox(data.step = 1, data.intro = intro$text[1],
                                          data.position = "right",
-                                         box(
+                                         bs4Dash::box(
                                            id = "div_box_escolha_funcao",
-                                           icon = icon("gears"),
+                                           icon = shiny::icon("gears"),
                                            height = "110",
                                            width = NULL,
-                                           title = "Escolha uma função",
-                                           shiny::splitLayout(id = "div_split_botoes",
-                                                              tags$head(
-                                                                tags$style(
-                                                                  HTML(
-                                                                    ".shiny-split-layout > div {
-                                                                overflow: visible;
-                                                               }"))),
-                                                              selectInput("SELEC_FCT", label = NULL,
-                                                                          width = "400px",
-                                                                          choices = choices_fct),
-                                                              cellWidths = c("0%", "50%", "50%"),
-                                                              tooltip(actionButton("CHECK_FCT", label = "Selecione a função",
-                                                                                   icon = icon("check")),
-                                                                      title = "essa é uma dica!", placement = "top"
-                                                              )
-                                           )
-                                           # div(style = "display:inline-block",
-                                           #     selectInput("SELEC_FCT", label = NULL,
-                                           #                 width = "200px",
-                                           #                 choices = choices_fct)),
-                                           # div(style = "display:inline-block",
-                                           #     actionButton("CHECK_FCT", label = "Selecione a função",
-                                           #                  style = "margin-top:-27px",
-                                           #                  icon = icon("check")))
+                                           title = "Choose a function",
+                                           shiny::selectInput("SELEC_FCT", label = NULL,
+                                                       width = "400px",
+                                                       choices = choices_fct),
+                                           footer = shiny::actionButton("BTN_SELEC_FCT", label = "Choose a function",
+                                                                 icon = shiny::icon("check"))
                                          )
                       )
                     ),
-                    fluidRow(
-                      introBox(data.step = 2, data.intro = intro$text[2],
+                    shiny::fluidRow(
+                      rintrojs::introBox(data.step = 2, data.intro = intro$text[2],
                                data.position = "right",
-                               bs4Dash::tabBox(id = "BOX_FUN_INPUTS", width = NULL, icon = icon("wand-magic-sparkles"),
-                                               title = "Aplique a função", type = "pills",
-                                               footer = splitLayout(id = "div_footer_split_botoes",
-                                                                    actionButton(inputId = "BTN_ADD_TAB", icon = icon("plus"),
-                                                                                 label = "Adicionar variável"),
-                                                                    actionButton(inputId = "BTN_RMV_TAB", icon = icon("minus"),
-                                                                                 label = "Remover variável"),
+                               bs4Dash::tabBox(id = "BOX_FUN_INPUTS", width = NULL, icon = shiny::icon("wand-magic-sparkles"),
+                                               title = "Apply the function", type = "pills",
+                                               footer = shiny::splitLayout(id = "div_footer_split_botoes",
+                                                                    shiny::fluidRow(
+                                                                      shiny::fluidRow(shiny::actionButton(inputId = "BTN_ADD_TAB", icon = shiny::icon("plus"),
+                                                                                            label = "Add variable")
+                                                                      ),
+                                                                      shiny::fluidRow(shiny::actionButton(inputId = "BTN_RMV_TAB", icon = shiny::icon("minus"),
+                                                                                            label = "Remove variable")
+                                                                      )
+                                                                    ),
                                                                     rintrojs::introBox(data.step = 3, data.intro = intro$text[3],
                                                                                        data.position = "right",
-                                                                                       actionButton(inputId = "EXEC_FCT", label = "Execute a função",
-                                                                                                    icon = icon("filter"))
+                                                                                       shiny::actionButton(inputId = "BTN_EXEC_FCT", label = "Execute the function",
+                                                                                                    icon = shiny::icon("filter"))
                                                                     )
                                                ),
-                                               tabPanel(title = "Variável 1",
-                                                        uiOutput("FUNCTION_INPUTS")
+                                               shiny::tabPanel(title = "Variable 1",
+                                                        shiny::uiOutput("FUNCTION_INPUTS")
                                                )
                                )
                       )
                     )
                   ),
-                  column(
-                    width = 5,
-                    # box(
-                    #   height = "480",
-                    #   width = NULL,
-                    #   title = "Seus dados",
+                  shiny::column(
+                    width = 6,
                     rintrojs::introBox(data.step = 4, data.intro = intro$text[4],
                                        data.position = "bottom",
                                        reactable::reactableOutput("DATA") |>
@@ -156,27 +161,29 @@ tidywizard <- function(){
                   )
                   # )
                 ),
-                fluidRow(
-                  column(
+                shiny::fluidRow(
+                  shiny::column(
                     width = 12,
                     rclipboard::rclipboardSetup(),
-                    tippy_this("BTN_CLIPBOARD",
-                               tooltip = "Copiado!",
+                    tippy::tippy_this("BTN_CLIPBOARD",
+                               tooltip = "Copied!",
                                trigger = "click"),
-                    box(
+                    bs4Dash::box(
+                      id = "BOX_R_CODE",
                       collapsible = F,
                       height = "300",
                       width = NULL,
-                      title = tagList(
-                        splitLayout(id = "div_header_code_box",
-                                    div(icon("code"), "Código de R", id = "div_icon_title_code_box"),
-                                    uiOutput("BTN_CLIPBOARD"))
-                      ),#"Código de R",
+                      title = shiny::tagList(
+                        shiny::splitLayout(id = "div_header_code_box",
+                                    htmltools::div(shiny::icon("code"), "R Code", id = "div_icon_title_code_box"),
+                                    shiny::uiOutput("BTN_CLIPBOARD"))
+                      ),
 
                       rintrojs::introBox(data.step = 5, data.intro = intro$text[5],
                                          data.position = "top",
-                                         verbatimTextOutput("CODE")
                                          # verbatimTextOutput("DEBUG")
+
+                                         shiny::htmlOutput("CODE")
                       )
                     )
                   )
@@ -188,223 +195,250 @@ tidywizard <- function(){
 
   server <- function(input, output, session){
     ## INTRO ----
-    observeEvent("", {
-      showModal(modalDialog(
+    shiny::observeEvent("", {
+      shiny::showModal(shiny::modalDialog(
         # includeHTML("../intro_text.html"),
-        HTML(paste0(htmltools::div(style = 'position:relative;',
-                                   img(src = knitr::image_uri(here::here("inst/logo_tidywizard.png")),
+        htmltools::HTML(paste0(htmltools::div(style = 'position:relative;',
+                                   htmltools::img(src = knitr::image_uri(fs::path_package("logo_tidywizard.png", package = "tidywizard")),
                                        style = 'display: block; margin-left: auto; margin-right: auto;',
                                        width = "30%")),
-                    HTML('<h1 style="text-align: center;">Seja bem-vindo ao&nbsp;<code><strong>tidywizard</strong></code></h1>
-                   <h4 style="text-align: center;">Uma aplicação com objetivo de facilitar a manipulação de dados enquanto o usuário aprende.<br>A forma de utilizar o tidywizard é simples: selecione e preencha as entradas conforme seu interesse para transformar os dados e o mago cuida do trabalho de traduzir isso para o R.<br>Depois disso, você pode conferir a fórmula do mago para executar o seu tratamento.</h4>
-                   <hr />
-                   <p style="text-align: left;font-size:20px;">O tidywizard está em processo de desenvolvimento, contudo ele já permite ao usuário fazer uso de funções corriqueiras do dia-a-dia da análise de dados, como <code>select</code> e <code>filter</code> do pacote <code>dplyr</code>.</a> </p>
+                    HTML('<h1 style="text-align: center;">Welcome to &nbsp;<code><strong>tidywizard</strong></code></h1>
+                   <h4 style="text-align: justify;">An application with the goal of <span>instructing the user</span> how to manipulate data with R in an <span>intuitive way</span> using everyday functions of a data scientist.<br><br>You use tidywizard in a simple way: <span>choose and fill in the entries</span> according to your interest to transform the data, and <span>the wizard takes care of the job</span> of translating that into R.<br>Afterward, you can check the <span>wizard\'s formula</span> to execute your treatment.</h4>
                    <hr />
                    ')
         )),
         easyClose = TRUE,
-        footer = tagList(
-          splitLayout(
-            actionButton(inputId = "BTN_SKIP_INTRO", label = "PULAR A INTRODUÇÃO", icon = icon("forward")),
-            actionButton(inputId = "INTRO", label = "IR À INTRODUÇÃO", icon = icon("info-circle"))
+        footer = shiny::tagList(
+          shiny::splitLayout(
+            shiny::actionButton(inputId = "BTN_SKIP_INTRO", label = "SKIP INTRODUCTION", icon = shiny::icon("forward")),
+            shiny::actionButton(inputId = "INTRO", label = "START INTRODUCTION", icon = shiny::icon("info-circle"))
           )
         )
       ))
     })
 
-    observe(
-      removeModal()
-    ) |> bindEvent(input$BTN_SKIP_INTRO)
+    shiny::observe(
+      shiny::removeModal()
+    ) |> shiny::bindEvent(input$BTN_SKIP_INTRO)
 
 
-    observeEvent(input$INTRO, {
-      removeModal()
+    shiny::observeEvent(input$INTRO, {
+      shiny::removeModal()
     })
 
-    observeEvent(input$INTRO, {
-      introjs(
+    shiny::observeEvent(input$INTRO, {
+      rintrojs::introjs(
         session,
-        options = list("nextLabel" = "Próximo",
-                       "prevLabel" = "Anterior",
-                       "doneLabel" = "Finalizar")
+        options = list("nextLabel" = "Next",
+                       "prevLabel" = "Back",
+                       "doneLabel" = "Finish")
       )
     })
 
     ## SERVER ----
-    observe({
+    shiny::observe({
       reactive_values$data <- reactive_values$data_reset
       reactive_values$code <- "df"
+      # reactive_values$code_to_html <- "df"
 
-    }) |> bindEvent(input$BTN_RESET)
+    }) |> shiny::bindEvent(input$BTN_RESET)
 
-    observe({
+    shiny::observe({
       if(reactive_values$code != "df"){
         reactive_values$code <- stringr::str_remove(reactive_values$code, pattern = "\\s\\|>\\n.+$")
         reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(reactive_values$code))
       }
 
-    }) |> bindEvent(input$BTN_BACK)
+    }) |> shiny::bindEvent(input$BTN_BACK)
 
-    selected_function <- eventReactive(input$CHECK_FCT, {
-      isolate({
+    selected_function <- shiny::eventReactive(input$BTN_SELEC_FCT, {
+      shiny::isolate({
         gsub("\\s*-.*", "", input$SELEC_FCT)
       })
     })
 
-    reactive_values <- reactiveValues(data_reset = df,
+    reactive_values <- shiny::reactiveValues(data_reset = df,
                                       data = df,
                                       code = "df",
+                                      # code_to_html = "df",
                                       cont_tabs = 1,
                                       mutate_type = NULL)
 
 
-    output$FUNCTION_INPUTS <- renderUI({
-      req(input$CHECK_FCT)
+    output$FUNCTION_INPUTS <- shiny::renderUI({
+      req(input$BTN_SELEC_FCT)
 
       if (selected_function() == "select") {
         # Renderizar os inputs específicos para a função select()
         # Exemplo: input para selecionar as colunas
-        selectInput(inputId = "SELEC_COLS",
-                    label = "Selecione a(s) coluna(s)",
-                    choices = colnames(reactive_values$data),
-                    multiple = TRUE)
+        shiny::tagList(
+          shiny::selectInput(inputId = "SELEC_COLS",
+                      label = "Choose the column(s)",
+                      choices = colnames(reactive_values$data),
+                      multiple = TRUE),
+          shiny::checkboxInput(inputId = "SELEC_REMOVE_COLS",
+                        label = "Remove columns")
+        )
+
       } else if (selected_function() == "filter") {
         # Renderizar os inputs específicos para a função filter()
         # Exemplo: inputs para selecionar a coluna, a condição e o valor
-        tagList(
-          selectInput(inputId = "SELEC_COL_FILTER",
-                      label = "Selecione a coluna",
+        shiny::tagList(
+          shiny::selectInput(inputId = "SELEC_COL_FILTER",
+                      label = "Choose the column to filter",
                       choices = colnames(reactive_values$data),
                       selected = NULL),
-          selectInput(inputId = "SELEC_CONDT",
-                      label = "Selecione a condição",
-                      choices = c("igual a", "maior que", "menor que", "maior ou igual a", "menor ou igual a", "diferente de")),
+          shiny::renderUI({
+            class_col <- class(reactive_values$data[[input$SELEC_COL_FILTER]])
+
+            if(class_col == "numeric"){
+              shiny::selectInput(inputId = "SELEC_CONDT",
+                          label = "Choose the condition",
+                          choices = c("equal to",
+                                      "different from",
+                                      "greater than",
+                                      "lesser than",
+                                      "greater or equal to",
+                                      "lesser or equal to"))
+            }
+            else {
+              shiny::selectInput(inputId = "SELEC_CONDT",
+                          label = "Choose the condition",
+                          choices = c(
+                            "equal to",
+                            "different from"
+                          )
+              )
+            }
+          }),
           renderUI({
             selected_column <- input$SELEC_COL_FILTER
             column_class <- class(reactive_values$data[[selected_column]])
 
             switch(column_class,
-                   "numeric" = numericInput(inputId = "FILTER_VALUE",
-                                            label = "Valor a filtrar",
+                   "numeric" = shiny::numericInput(inputId = "FILTER_VALUE",
+                                            label = "Value to filter by",
                                             value = 0),
-                   "integer" = numericInput(inputId = "FILTER_VALUE",
-                                            label = "Valor a filtrar",
+                   "integer" = shiny::numericInput(inputId = "FILTER_VALUE",
+                                            label = "Value to filter by",
                                             value = 0),
-                   "character" = selectInput(inputId = "FILTER_VALUE",
-                                             label = "Valor a filtrar",
+                   "character" = shiny::selectInput(inputId = "FILTER_VALUE",
+                                             label = "Value to filter by",
                                              choices = unique(reactive_values$data[[selected_column]]),
                                              multiple = TRUE),
-                   "factor" = selectInput(inputId = "FILTER_VALUE",
-                                          label = "Valor a filtrar",
+                   "factor" = shiny::selectInput(inputId = "FILTER_VALUE",
+                                          label = "Value to filter by",
                                           choices = levels(reactive_values$data[[selected_column]])),
                    # Caso o tipo da coluna não seja numeric, character ou factor
-                   p("Aviso: Tipo de coluna não suportado para filtro.")
+                   # p("Aviso: Tipo de coluna não suportado para filtro.")
             )
           })
         )
       } else if (selected_function() == "summarise"){
-        tagList(
-          selectInput(inputId = "SELEC_GROUP_BY", label = "Selecione uma coluna para agrupar",
+        shiny::tagList(
+          shiny::selectInput(inputId = "SELEC_GROUP_BY",
+                      label = "Choose a column to group by",
                       multiple = TRUE, choices = colnames(reactive_values$data)),
 
-          selectInput(inputId = "SELEC_COL_SUMM_1", label = "Selecione a coluna",
+          shiny::selectInput(inputId = "SELEC_COL_SUMM_1",
+                      label = "Choose the column to summarise",
                       choices = colnames(reactive_values$data)),
-          renderUI({
+          shiny::renderUI({
             selected_column_summ1 <- input$SELEC_COL_SUMM_1
             summ1_class <- class(reactive_values$data[[selected_column_summ1]])
 
             switch(summ1_class,
-                   "numeric" = selectInput(inputId = "FCT_SUMM_1",
-                                           label = "Selecione o tipo de sumarização",
+                   "numeric" = shiny::selectInput(inputId = "FCT_SUMM_1",
+                                           label = "Choose how to summarise",
                                            choices = numeric_summs),
-                   "integer" = selectInput(inputId = "FCT_SUMM_1",
-                                           label = "Selecione o tipo de sumarização",
+                   "integer" = shiny::selectInput(inputId = "FCT_SUMM_1",
+                                           label = "Choose how to summarise",
                                            choices = numeric_summs),
-                   "character" = selectInput(inputId = "FCT_SUMM_1",
-                                             label = "Selecione o tipo de sumarização",
-                                             choices = "contagem"),
-                   "factor" = selectInput(inputId = "FCT_SUMM_1",
-                                          label = "Selecione o tipo de sumarização",
-                                          choices = "contagem"))
+                   "character" = shiny::selectInput(inputId = "FCT_SUMM_1",
+                                             label = "Choose how to summarise",
+                                             choices = "frequency"),
+                   "factor" = shiny::selectInput(inputId = "FCT_SUMM_1",
+                                          label = "Choose how to summarise",
+                                          choices = "frequency"))
           })
         )
       } else if (selected_function() == "count"){
         # tooltip(title = "Caso você queira contar por grupos, selecione a coluna de agrupamento, e então a coluna que deve ser contada", placement = "right",
-        selectInput(inputId = "SELEC_COLS_COUNT",
-                    label = "Selecione a(s) coluna(s)",
+        shiny::selectInput(inputId = "SELEC_COLS_COUNT",
+                    label = "Choose the column(s) to count by",
                     choices = colnames(reactive_values$data),
                     multiple = TRUE)
         # )
       } else if (selected_function() == "arrange"){
-        selectInput(inputId = "SELEC_COLS_ARRANGE",
-                    label = "Selecione a(s) coluna(s)",
-                    choices = colnames(reactive_values$data),
-                    multiple = TRUE)
+        tagList(
+          shiny::selectInput(inputId = "SELEC_COLS_ARRANGE",
+                      label = "Choose the column(s) to order by",
+                      choices = colnames(reactive_values$data),
+                      multiple = TRUE),
+          shiny::checkboxInput(inputId = "CHECKBOX_ARRANGE",
+                        label = "Descending order",
+                        value = F)
+        )
       } else if (selected_function() == "rename"){
         tagList(
-          selectInput(inputId = "SELEC_COL_RENAME_1", label = "Selecione a coluna",
+          shiny::selectInput(inputId = "SELEC_COL_RENAME_1",
+                      label = "Choose the column to rename",
                       choices = colnames(reactive_values$data)),
-          textInput(inputId = "TEXT_RENAME_COL_1", label = "Renomeie a coluna",
-                    placeholder = "Escreva aqui")
+          shiny::textInput(inputId = "TEXT_RENAME_COL_1",
+                    label = "Rename the column",
+                    placeholder = "Write here")
         )
       } else if (selected_function() == "separate"){
-        tagList(
-          selectInput(inputId = "SELEC_COL_SEPARATE", label = "Selecione a coluna",
+        shiny::tagList(
+          shiny::selectInput(inputId = "SELEC_COL_SEPARATE",
+                      label = "Choose the column to separate",
                       choices = colnames(reactive_values$data)),
-          textInput(inputId = "TEXT_SEPARATE_SEP", label = "Defina um separador",
-                    placeholder = "Algo como: ., e, +, -"),
-          textInput(inputId = "TEXT_SEPARATE_INTO", label = "Defina as colunas resultantes",
-                    placeholder = '"Coluna_1, Coluna_2", ou "Novas Colunas" se você não sabe o total de colunas')
+          shiny::textInput(inputId = "TEXT_SEPARATE_SEP",
+                    label = "Define a separator",
+                    placeholder = "As in: ., and, +, -"),
+          shiny::textInput(inputId = "TEXT_SEPARATE_INTO",
+                    label = "Name the new columns",
+                    placeholder = 'Structure as in "Column_1, Column_2", or "New columns" if you don\'t know the total number of columns')
         )
       } else if (selected_function() == "unite"){
-        tagList(
-          textInput(inputId = "TEXT_UNITE_NEW", label = "Defina o nome da nova coluna"),
-          selectInput(inputId = "SELEC_COLS_UNITE", label = "Selecione as colunas para unir",
+        shiny::tagList(
+          shiny::textInput(inputId = "TEXT_UNITE_NEW",
+                    label = "Define the new column\'s name"),
+          shiny::selectInput(inputId = "SELEC_COLS_UNITE",
+                      label = "Choose which columns to unite",
                       choices = colnames(reactive_values$data), multiple = T),
-          textInput(inputId = "TEXT_UNITE_SEP", label = "Defina um separador para os valores",
-                    placeholder = "Algo como: e, +, -"),
-          checkboxInput(inputId = "CHECK_UNITE_REMOVE", label = "Remover as colunas unidas?",
+          shiny::textInput(inputId = "TEXT_UNITE_SEP",
+                    label = "Define a separator for the values",
+                    placeholder = "As in: and, +, -"),
+          shiny::checkboxInput(inputId = "CHECK_UNITE_REMOVE",
+                        label = "Remove base columns?",
                         value = T)
         )
       } else if (selected_function() == "mutate"){
-        tagList(
-          selectInput(inputId = "SELEC_GROUP_BY", label = "Selecione uma coluna para agrupar",
+        shiny::tagList(
+          shiny::selectInput(inputId = "SELEC_GROUP_BY",
+                      label = "Choose columns to group by",
                       multiple = TRUE, choices = colnames(reactive_values$data)),
-          textInput(inputId = "TEXT_MUTATE", label = "Nomeie a nova coluna, ou escolha uma coluna existente"),
-          selectInput(inputId = "SELEC_MUTATE", label = "Escolha como mudar/criar a coluna",
+          shiny::textInput(inputId = "TEXT_MUTATE",
+                    label = "Name the new column, or an existing column"),
+          shiny::selectInput(inputId = "SELEC_MUTATE",
+                      label = "Choose how to create or change the column",
                       choices = mutate_choices),
-          renderUI({
+          shiny::renderUI({
             reactive_values$mutate_type <- input$SELEC_MUTATE
 
             switch(reactive_values$mutate_type,
-                   "Operações numéricas" = textInput(inputId = "TEXT_MUTATE_OPERACOES",
-                                                     label = "Defina a equação"),
-                   "Operações com funções" = tagList(
-                     selectInput(inputId = "SELEC_MUTATE_FUN_COL", label = "Escolha a coluna",
+                   "Numerical operations" = shiny::textInput(inputId = "TEXT_MUTATE_OPERACOES",
+                                                      label = "Define an equation"),
+                   "Operations with functions" = shiny::tagList(
+                     shiny::selectInput(inputId = "SELEC_MUTATE_FUN_COL",
+                                 label = "Choose the column to apply a function",
                                  choices = colnames(reactive_values$data)),
-                     selectInput(inputId = "SELEC_MUTATE_FUN", label = "Escolha a função",
-                                 choices = c("log", "exp", "mean", "sum", "min", "max", "cumsum"))
+                     shiny::selectInput(inputId = "SELEC_MUTATE_FUN",
+                                 label = "Choose the function",
+                                 choices = c("log", "exp", "mean",
+                                             "sum", "min", "max", "cumsum"))
                    )
-                   # "Conversão de classes" = tagList(
-                   #   selectInput(inputId = "SELEC_MUTATE_CLASS_COL", label = "Escolha a coluna",
-                   #               choices = colnames(reactive_values$data)),
-                   #   selectInput(inputId = "SELEC_MUTATE_CLASS", label = "Escolha a classe",
-                   #               choices = c("numeric", "character", "logical", "Date"))
-                   # ),
-                   # "Somatórios" = tagList(
-                   #   selectInput(inputId = "SELEC_MUTATE_SUM",
-                   #               label = "Qual tipo de somatório?",
-                   #               choices = c("sum - Somatório geral",
-                   #                           "cumsum - Somatório acumulado")),
-                   #   selectInput(inputId = "SELEC_MUTATE_SUM_COL",
-                   #               label = "Escolha a coluna",
-                   #               choices = colnames(reactive_values$data))
-                   # ),
-                   # "'Se, senão' (If, else)" = tagList(
-                   #   textInput(inputId = "TEXT_MUTATE_IF", label = "Se"),
-                   #   textInput(inputId = "TEXT_MUTATE_IF_TRUE", label = "Então"),
-                   #   textInput(inputId = "TEXT_MUTATE_IF_FALSE", label = "Se não, então")
-                   # )
             )
           })
         )
@@ -413,89 +447,105 @@ tidywizard <- function(){
 
     ## INCLUIR NOVAS TABS ----
     add_tab_summ <- function(id){
-      tagList(
-        selectInput(inputId = paste0("SELEC_COL_SUMM_", id), label = paste("Selecione uma variável para var", id),
-                    choices = colnames(reactive_values$data), selected = NULL),
-        renderUI({
+      shiny::tagList(
+        shiny::selectInput(inputId = paste0("SELEC_COL_SUMM_", id),
+                    label = paste("Choose a column to summarise"),
+                    choices = colnames(reactive_values$data),
+                    selected = NULL),
+        shiny::renderUI({
           selected_column_summ <- rlang::eval_tidy(rlang::parse_expr(paste0("input$SELEC_COL_SUMM_", id)))
           summ_class <- class(reactive_values$data[[selected_column_summ]])
 
           switch(summ_class,
-                 "numeric" = selectInput(inputId = paste0("FCT_SUMM_", id),
-                                         label = paste("Selecione o tipo de sumarização para var", id),
+                 "numeric" = shiny::selectInput(inputId = paste0("FCT_SUMM_", id),
+                                         label = paste("Choose how to summarise"),
                                          choices = numeric_summs),
-                 "integer" = selectInput(inputId = paste0("FCT_SUMM_", id),
-                                         label = paste("Selecione o tipo de sumarização para var", id),
+                 "integer" = shiny::selectInput(inputId = paste0("FCT_SUMM_", id),
+                                         label = paste("Choose how to summarise"),
                                          choices = numeric_summs),
-                 "character" = selectInput(inputId = paste0("FCT_SUMM_", id),
-                                           label = paste("Selecione o tipo de sumarização para var", id),
-                                           choices = "contagem"),
-                 "factor" = selectInput(inputId = paste0("FCT_SUMM_", id),
-                                        label = paste("Selecione o tipo de sumarização para var", id),
-                                        choices = "contagem"))
+                 "character" = shiny::selectInput(inputId = paste0("FCT_SUMM_", id),
+                                           label = paste("Choose how to summarise"),
+                                           choices = "frequency"),
+                 "factor" = shiny::selectInput(inputId = paste0("FCT_SUMM_", id),
+                                        label = paste("Choose how to summarise"),
+                                        choices = "frequency"))
         })
       )
     }
 
     add_tab_rename <- function(id){
-      tagList(
-        selectInput(inputId = paste0("SELEC_COL_RENAME_", id), label = "Selecione a coluna",
+      shiny::tagList(
+        shiny::selectInput(inputId = paste0("SELEC_COL_RENAME_", id),
+                    label = "Choose a column to rename",
                     choices = colnames(reactive_values$data)),
-        textInput(inputId = paste0("TEXT_RENAME_COL_", id), label = "Renomeie a coluna",
-                  placeholder = "Escreva aqui")
+        shiny::textInput(inputId = paste0("TEXT_RENAME_COL_", id),
+                  label = "Rename the column",
+                  placeholder = "Write here")
       )
     }
 
     observe({
-      isolate(input$BTN_ADD_TAB)
+      shiny::isolate(input$BTN_ADD_TAB)
 
       if(selected_function() == "summarise"){
         reactive_values$cont_tabs <- reactive_values$cont_tabs + 1
 
-        insertTab(inputId = "BOX_FUN_INPUTS", target = paste0("Variável ", reactive_values$cont_tabs - 1),
-                  position = "after", select = TRUE,
-                  tabPanel(title = paste0("Variável ", reactive_values$cont_tabs), add_tab_summ(reactive_values$cont_tabs)))
+        shiny::insertTab(inputId = "BOX_FUN_INPUTS", target = paste0("Variable ", reactive_values$cont_tabs - 1),
+                           position = "after", select = TRUE,
+                           tabPanel(title = paste0("Variable ", reactive_values$cont_tabs),
+                                    add_tab_summ(reactive_values$cont_tabs)))
       }
 
       if(selected_function() == "rename"){
         reactive_values$cont_tabs <- reactive_values$cont_tabs + 1
 
-        insertTab(inputId = "BOX_FUN_INPUTS", target = paste0("Variável ", reactive_values$cont_tabs - 1),
-                  position = "after", select = TRUE,
-                  tabPanel(title = paste0("Variável ", reactive_values$cont_tabs), add_tab_rename(reactive_values$cont_tabs)))
+        shiny::insertTab(inputId = "BOX_FUN_INPUTS", target = paste0("Variable ", reactive_values$cont_tabs - 1),
+                           position = "after", select = TRUE,
+                           tabPanel(title = paste0("Variable ", reactive_values$cont_tabs), add_tab_rename(reactive_values$cont_tabs)))
       }
     }) |>
-      bindEvent(input$BTN_ADD_TAB)
+      shiny::bindEvent(input$BTN_ADD_TAB)
 
-    observe({
-      isolate(input$BTN_RMV_TAB)
+    shiny::observe({
+      shiny::isolate(input$BTN_RMV_TAB)
 
       if(reactive_values$cont_tabs > 1){
-        removeTab(inputId = "BOX_FUN_INPUTS", target = paste0("Variável ", reactive_values$cont_tabs))
+        shiny::removeTab(inputId = "BOX_FUN_INPUTS", target = paste0("Variable ", reactive_values$cont_tabs))
 
         reactive_values$cont_tabs <- reactive_values$cont_tabs - 1
       }
-    }) |> bindEvent(input$BTN_RMV_TAB)
+    }) |> shiny::bindEvent(input$BTN_RMV_TAB)
+
+    shiny::observe({
+      while(reactive_values$cont_tabs > 1){
+        shiny::removeTab(inputId = "BOX_FUN_INPUTS", target = paste0("Variable ", reactive_values$cont_tabs))
+
+        reactive_values$cont_tabs <- reactive_values$cont_tabs - 1
+      }
+    }) |>
+      shiny::bindEvent(input$BTN_EXEC_FCT)
 
 
     ## R CODE ----
-    observe({
+    shiny::observe({
       if(selected_function() == "select"){
         cols <- input$SELEC_COLS
-        cols <- sprintf("%s", paste(sprintf("%s", cols), collapse = ", "))
+        remove <- input$SELEC_REMOVE_COLS
+        cols <- paste_cols_args(cols, remove)
 
-        reactive_values$code <- paste0(isolate(reactive_values$code), " |>\n select(", cols, ")")
-        reactive_values$data <- reactive_values$data |>
-          select(input$SELEC_COLS)
+        reactive_values$code <- paste0(shiny::isolate(reactive_values$code), " |>\n select(", cols, ")")
       }
 
       else if(selected_function() == "filter"){
         condition <- logical_condition(input$SELEC_CONDT)
-        filtering <- sprintf("%s %s '%s'", input$SELEC_COL_FILTER, condition, input$FILTER_VALUE)
-        filter_code <- paste0(isolate(reactive_values$code), " |>\n filter(rlang::eval_tidy(rlang::parse_expr(filtering)))")
+        class_col_filter <- class(reactive_values$data[[input$SELEC_COL_FILTER]])
 
-        reactive_values$code <- paste0(isolate(reactive_values$code), " |>\n filter(", input$SELEC_COL_FILTER, " ", condition, " '", input$FILTER_VALUE, "')")
-        reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(filter_code))
+        filtering <- paste_cols_filtering(class_col_filter,
+                                          input$SELEC_COL_FILTER, condition, input$FILTER_VALUE)
+
+        filter_code <- paste0(shiny::isolate(reactive_values$code), " |>\n filter(rlang::eval_tidy(rlang::parse_expr(filtering)))")
+
+        reactive_values$code <- paste0(shiny::isolate(reactive_values$code), " |>\n filter(", filtering, ")")
       }
 
       else if(selected_function() == "summarise"){
@@ -522,34 +572,41 @@ tidywizard <- function(){
 
         if(any(input$SELEC_GROUP_BY %in% colnames(reactive_values$data))){
           group_cols <- input$SELEC_GROUP_BY
-          group_cols <- sprintf("%s", paste(sprintf("%s", group_cols), collapse = ", "))
+          group_cols <- paste_cols_args(group_cols)
 
-          reactive_values$code <- paste0(isolate(reactive_values$code), " |>\n group_by(", group_cols, ")")
+          reactive_values$code <- paste0(shiny::isolate(reactive_values$code), " |>\n group_by(", group_cols, ")")
         }
 
         summarise_code <- paste0(summarise_code, collapse = ",\n          ")
+
         summarise_code <- paste0("summarise(", summarise_code, ")")
-        summarise_code <- paste0(isolate(reactive_values$code), " |>\n ", summarise_code)
+        summarise_code <- paste0(shiny::isolate(reactive_values$code), " |>\n ", summarise_code)
+
 
         reactive_values$code <- summarise_code
-        reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(summarise_code))
       }
       else if (selected_function() == "count"){
         cols <- input$SELEC_COLS_COUNT
-        cols <- sprintf("%s", paste(sprintf("%s", cols), collapse = ", "))
+        cols <- paste_cols_args(cols)
 
-        reactive_values$code <- paste0(isolate(reactive_values$code), " |>\n count(", cols, ")")
-        reactive_values$data <- reactive_values$data |>
-          count(input$SELEC_COLS)
+        sprintf("%s", paste(sprintf("%s", cols), collapse = ", "))
+
+        reactive_values$code <- paste0(shiny::isolate(reactive_values$code), " |>\n count(", cols, ")")
       }
+
       else if (selected_function() == "arrange"){
         cols <- input$SELEC_COLS_ARRANGE
-        cols <- sprintf("%s", paste(sprintf("%s", cols), collapse = ", "))
 
-        reactive_values$code <- paste0(isolate(reactive_values$code), " |>\n arrange(", cols, ")")
-        reactive_values$data <- reactive_values$data |>
-          arrange(input$SELEC_COLS)
+        if(isTRUE(input$CHECKBOX_ARRANGE)){
+          cols <- sprintf("%s", paste(sprintf("desc(%s)", cols), collapse = ", "))
+        }
+        else {
+          cols <- paste_cols_args(cols)
+        }
+
+        reactive_values$code <- paste0(shiny::isolate(reactive_values$code), " |>\n arrange(", cols, ")")
       }
+
       else if (selected_function() == "rename"){
         rename_code <- NULL
 
@@ -561,11 +618,11 @@ tidywizard <- function(){
         }
 
         rename_code <- paste0(rename_code, collapse = ",\n          ")
+
         rename_code <- paste0("rename(", rename_code, ")")
-        rename_code <- paste0(isolate(reactive_values$code), " |>\n ", rename_code)
+        rename_code <- paste0(shiny::isolate(reactive_values$code), " |>\n ", rename_code)
 
         reactive_values$code <- rename_code
-        reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(rename_code))
       }
       else if (selected_function() == "separate"){
         col <- input$SELEC_COL_SEPARATE
@@ -587,20 +644,20 @@ tidywizard <- function(){
           into_cols <- paste0("col_", seq_len(nmax))
           into_cols <- paste0("c(", paste0(sprintf("'%s'", into_cols), collapse = ", "), ")")
 
-          separate_code <- paste0(isolate(reactive_values$code), " |>\n separate(col = ", col, ", into = ", into_cols, ", sep = ", col_sep, ")")
+          separate_code <- paste0(shiny::isolate(reactive_values$code), " |>\n separate(col = ", col, ", into = ", into_cols, ", sep = ", col_sep, ")")
 
           reactive_values$code <- separate_code
-          reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(separate_code))
         } else{
           into_cols <- stringr::str_replace_all(string = into_cols, pattern = '"', replacement = "'")
           into_cols <- stringr::str_replace_all(string = into_cols, pattern = "'", replacement = "")
-          into_cols <- strsplit(into_cols, split = ",") |> unlist() |> stringr::str_trim()
+          into_cols <- strsplit(into_cols, split = ",") |>
+            unlist() |>
+            stringr::str_trim()
           into_cols <- paste0("c(", paste0(sprintf("'%s'", into_cols), collapse = ", "), ")")
 
-          separate_code <- paste0(isolate(reactive_values$code), " |>\n separate(col = ", col, ", into = ", into_cols, ", sep = ", col_sep, ")")
+          separate_code <- paste0(shiny::isolate(reactive_values$code), " |>\n separate(col = ", col, ", into = ", into_cols, ", sep = ", col_sep, ")")
 
           reactive_values$code <- separate_code
-          reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(separate_code))
         }
       }
       else if (selected_function() == "unite"){
@@ -614,58 +671,38 @@ tidywizard <- function(){
 
         unite_remove <- input$CHECK_UNITE_REMOVE
 
-        unite_code <- paste0(isolate(reactive_values$code), " |>\n unite(col = ", unite_new, ", sep = ", unite_sep, ", remove = ", unite_remove, ", ", unite_cols, ")")
+        unite_code <- paste0(shiny::isolate(reactive_values$code), " |>\n unite(col = ", unite_new, ", sep = ", unite_sep, ", remove = ", unite_remove, ", ", unite_cols, ")")
 
         reactive_values$code <- unite_code
-        reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(unite_code))
       }
       else if (selected_function() == "mutate"){
-        mutate_code <- NULL
-
         mutate_col <- input$TEXT_MUTATE
         mutate_code <- paste0("mutate(", mutate_col, " = ")
 
         mutate_code <- switch(reactive_values$mutate_type,
-                              "Operações numéricas" = paste0(mutate_code, input$TEXT_MUTATE_OPERACOES, ")"),
-                              "Operações com funções" = paste0(mutate_code, input$SELEC_MUTATE_FUN, "(",
-                                                               input$SELEC_MUTATE_FUN_COL, "))")#,
-                              # "Somatórios" = paste0(mutate_code, gsub("\\s*-.*", "", input$SELEC_MUTATE_SUM), "(",
-                              #                       input$SELEC_MUTATE_SUM_COL, "))"
-                              #
-                              # ),
-                              # "'Se, senão' (If, else)" = paste0(mutate_code, "if_else(condition = ",
-                              #                                   input$TEXT_MUTATE_IF, ", true = '",
-                              #                                   input$TEXT_MUTATE_IF_TRUE, "', false = '",
-                              #                                   input$TEXT_MUTATE_IF_FALSE, "'))")
+                              "Numerical operations" = paste0(mutate_code, input$TEXT_MUTATE_OPERACOES, ")"),
+                              "Operations with functions" = paste0(mutate_code, input$SELEC_MUTATE_FUN, "(",
+                                                                   input$SELEC_MUTATE_FUN_COL, "))")
         )
 
         if(any(input$SELEC_GROUP_BY %in% colnames(reactive_values$data))){
           group_cols <- input$SELEC_GROUP_BY
           group_cols <- sprintf("%s", paste(sprintf("%s", group_cols), collapse = ", "))
 
-          reactive_values$code <- paste0(isolate(reactive_values$code), " |>\n group_by(", group_cols, ")")
+          reactive_values$code <- paste0(shiny::isolate(reactive_values$code), " |>\n group_by(", group_cols, ")")
         }
 
-        mutate_code <- paste0(isolate(reactive_values$code), " |>\n ", mutate_code)
+        mutate_code <- paste0(shiny::isolate(reactive_values$code), " |>\n ", mutate_code)
 
         reactive_values$code <- mutate_code
-        # reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(mutate_code))
       }
     }) |>
-      bindEvent(input$EXEC_FCT)
+      bindEvent(input$BTN_EXEC_FCT)
 
-    # output$DATA <- function(){
-    #   rlang::eval_tidy(rlang::parse_expr(reactive_values$code)) |>
-    #       # DT::datatable(escape = F, rownames = F, class = "cell-border compact", selection = "none",
-    #       #               options = list(ordering = T, autowidth = F, scrollX = TRUE, scrollY = 390, paging = FALSE,
-    #       #                              language = list(lengthMenu = "_MENU_"), lengthChange = FALSE, dom = "<<\"datatables-scroll\"t>>",
-    #       #                              columnDefs = list(list(className = "dt-center", targets = "_all"))
-    #       #                              ))
-    #     kableExtra::kbl(escape = T) |>
-    #     kableExtra::kable_styling(full_width = F) |>
-    #     kableExtra::row_spec(0, bold = T) |>
-    #     kableExtra::scroll_box(height = "450px", width = "490px")
-    #   }
+    observe({
+      reactive_values$data <- rlang::eval_tidy(rlang::parse_expr(reactive_values$code))
+    }) |>
+      bindEvent(input$BTN_EXEC_FCT)
 
     output$DATA <- reactable::renderReactable({
       rlang::eval_tidy(rlang::parse_expr(reactive_values$code)) |>
@@ -673,25 +710,25 @@ tidywizard <- function(){
                              filterable = F, sortable = F)
     })
 
-    output$CODE <- renderPrint({
+    output$CODE <- function(){
       reactive_values$code |>
-        cat()
-    })
+        code_to_html() |>
+        htmltools::HTML()
+    }
 
-    output$BTN_CLIPBOARD <- renderUI({
-      rclipButton(
+    output$BTN_CLIPBOARD <- shiny::renderUI({
+      rclipboard::rclipButton(
         "BTN_CLIP",
         "Copy to clipboard",
         clipText = reactive_values$code,
-        icon = icon("clipboard")
+        icon = shiny::icon("clipboard")
       )
     })
 
-    output$DEBUG <- renderPrint({
-      print(str(reactiveValuesToList(reactive_values)))
-    })
+    # output$DEBUG <- shiny::renderPrint({
+    #   print(str(reactiveValuesToList(reactive_values)))
+    # })
   }
 
   shinyApp(ui, server)
-
 }

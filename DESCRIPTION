@@ -12,6 +12,7 @@ Depends:
 Imports:
 	bs4Dash,
 	dplyr,
+	fresh,
 	ggplot2,
 	here,
 	htmltools,
@@ -19,7 +20,6 @@ Imports:
 	purrr,
 	rclipboard,
 	reactable,
-	readr,
 	rintrojs,
 	rlang,
 	shiny,

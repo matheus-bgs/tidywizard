@@ -2,13 +2,13 @@
 % Please edit documentation in R/tidywizard.R
 \name{tidywizard}
 \alias{tidywizard}
-\title{Launch tidywizard}
+\title{The main tidywizard app}
 \usage{
 tidywizard()
 }
 \value{
-Launches the tidywizard shiny application
+Defines the tidywizard shiny application
 }
 \description{
-Launch tidywizard
+The main tidywizard app
 }
