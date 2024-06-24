@@ -9,8 +9,28 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    fluidPage(
-      h1("tidywizard")
+    bslib::page_sidebar(
+      theme = bslib::bs_theme(
+        version = 5
+        ),
+      title = div(
+        img(
+          class = "div-title-tidywizard",
+          src = "www/tidywizard.png", 
+          height = 50, 
+          width = 50
+        ),
+        span(
+          class = "span-title-tidywizard",
+          "tidywizard"
+          )
+      ),
+      sidebar = bslib::sidebar(
+        title = "Input Functions",
+        width = 300,
+        mod_function_selector_ui("function_selector"),
+        mod_function_inputs_ui("function_inputs")
+      ),
     )
   )
 }
@@ -30,7 +50,7 @@ golem_add_external_resources <- function() {
   )
 
   tags$head(
-    favicon(),
+    favicon(ext = "png"),
     bundle_resources(
       path = app_sys("app/www"),
       app_title = "tidywizard"

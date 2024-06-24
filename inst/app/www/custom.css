@@ -1,0 +1,25 @@
+/*
+Customization for navbar
+*/
+.navbar{
+  --bs-navbar-padding-y: .2rem; /* smaller navbar vertical padding */
+}
+
+.div-title-tidywizard {
+  display: inline-flex; /* title becomes flex */
+}
+
+.span-title-tidywizard {
+  font-size: 1.4rem; /* bigger font-size for title */
+  vertical-align: middle; /* vertical align for title */
+}
+/*
+Customization for sidebar title
+*/
+.bslib-sidebar-layout {
+  --_border: none; /* removes bottom border of sidebar title */
+}
+
+.bslib-sidebar-layout > .sidebar > .sidebar-content {
+  padding-top: 0.7em; /* makes title of sidebar align to toggle button */
+}

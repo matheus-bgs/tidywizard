@@ -20,8 +20,8 @@ attachment::att_amend_desc()
 
 ## Add modules ----
 ## Create a module infrastructure in R/
-golem::add_module(name = "name_of_module1", with_test = TRUE) # Name of the module
-golem::add_module(name = "name_of_module2", with_test = TRUE) # Name of the module
+golem::add_module(name = "function_selector", with_test = TRUE) # Name of the module
+golem::add_module(name = "function_inputs", with_test = TRUE) # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
@@ -44,6 +44,12 @@ usethis::use_data_raw(name = "my_dataset", open = FALSE)
 usethis::use_test("app")
 
 # Documentation
+## Documentation for packages used
+usethis::use_package("dplyr")
+usethis::use_package("reactable")
+usethis::use_package("bslib")
+usethis::use_package("stringr")
+
 
 ## Vignette ----
 usethis::use_vignette("tidywizard")
